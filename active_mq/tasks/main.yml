@@ -1,0 +1,65 @@
+---
+- name: create group for activemq account
+  group: 
+    name: "{{ mq_group }}"
+    state: present
+
+- name: create activemq user account
+  user:
+    name: '{{ mq_user}}'
+    group: '{{ mq_group }}'
+    createhome: yes  #depending on your needs
+    comment: 'Active MQ User'
+    state: present
+
+- name: create required directories
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: '{{ mq_user }}'
+    group: '{{ mq_group }}'
+    mode: 0755
+  with_items:
+    - "{{ tr_dir }}"
+    - "{{ mq_install_dir }}"
+
+
+- name: tranfer tarball
+  get_url: 
+
+    url: http://archive.apache.org/dist/activemq/apache-activemq/5.6.0/apache-activemq-5.6.0-bin.tar.gz
+    dest: "{{ tr_dir }}"
+    owner: "{{ mq_user }}"
+    remote_src: yes
+
+- name: untar the tarball
+  unarchive:
+    src: "{{ tr_dir }}"
+    dest: "{{ mq_install_dir}}"
+    list_files: true
+    owner: "{{ mq_user }}"
+    group: "{{ mq_group }}"
+    remote_src: yes
+ 
+- name: modify the file
+  lineinfile:
+    path: /home/activemq/apache-activemq-5.9.1/conf/jetty.xml
+    regexp: '^<property name="port" value='
+    line: '<property name="port" value="7777"/>'
+  
+  
+- name: start active mq server
+  command: /home/activemq/apache-activemq-5.9.1/bin/activemq start
+
+
+#- name: Create queues
+#  uri:
+#    url: (http|https)://host.domain[:port]/path
+#    method: POST
+#    user: admin
+#    password: admin
+#    body: "{{ lookup('file','xxx.json') }}"
+#  body_format: json
+  
+#  Inside body: Create a JSON file that creates active mq queues 
+ 

@@ -1,0 +1,8 @@
+---
+# vars file for active_mq
+mq_user: active_mq
+mq_group: activemq
+tr_dir: /opt/activemqtar
+mq_install_dir: /opt/activemq3
+
+
